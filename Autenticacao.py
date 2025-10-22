@@ -1,10 +1,17 @@
-from Cliente import Cliente
-from Conta import Conta
+import json
 
 class Autenticacao:
 
     def __init__(self):
         self.clientes_cadastrados = {}
+        try:
+            with open("clientes_cadastrados.json", "r") as arquivo:
+                self.clientes_cadastrados = json.load(arquivo)
+        except FileNotFoundError:
+            self.clientes_cadastrados = {} # Arquivo não existe, começa do zero
+        except json.JSONDecodeError:
+            self.clientes_cadastrados = {}  # Arquivo existe, mas está vazio ou corrompido
+            print("Aviso: Arquivo de senhas estava corrompido ou vazio. Iniciando do zero.")
 
     def cadastrar_senha(self, cpf, senha):
         if cpf in self.clientes_cadastrados:
@@ -14,8 +21,14 @@ class Autenticacao:
             print("A senha deve conter exatamente 6 caracteres")
             return False
         self.clientes_cadastrados[cpf] = senha
-        print("Cliente {cpf} cadastrado com sucesso!")
-        return True
+        try:
+            with open("clientes_cadastrados.json", "w") as arquivo:
+                json.dump(self.clientes_cadastrados, arquivo, indent=4)
+                print(f"Cliente {cpf} cadastrado com sucesso!")
+                return True
+        except OSError:
+            print(f"Erro ao salvar o cadastro do cliente {cpf}.")
+            return False
 
     def verificar_login(self, cpf, senha):
         if cpf in self.clientes_cadastrados:
@@ -29,9 +42,17 @@ class Autenticacao:
             return False
 
     def alterar_senha(self, cpf, senha_atual, nova_senha):
-        if self.clientes_cadastrados[cpf] == senha_atual:
-            self.clientes_cadastrados[cpf] = nova_senha
-            return True
-        else:
-            print("Senha incorreta tente novamente!")
+        if cpf not in self.clientes_cadastrados:
+            print("ERRO: CPF não cadastrado!")
             return False
+        if self.clientes_cadastrados[cpf] != senha_atual:
+            print("ERRO: Senha incorreta!")
+            return False
+        self.clientes_cadastrados[cpf] = nova_senha
+        try:
+            with open("clientes_cadastrados.json", "w") as arquivo:
+                json.dump(self.clientes_cadastrados, arquivo, indent=4)
+                return True
+        except OSError:
+                print("Falha ao cadastrar a nova senha!")
+                return False
