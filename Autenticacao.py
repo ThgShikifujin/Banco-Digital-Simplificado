@@ -1,9 +1,21 @@
 import json
 
 class Autenticacao:
+    """
+        Gerencia o cadastro, verificação e alteração de senhas.
+        É responsável pela persistência dos dados de autenticação
+        no arquivo 'clientes_cadastrados.json'.
+    """
 
     def __init__(self):
+        """
+            Responsável por carregar o arquivo 'clientes_cadastrados.json'
+            para leitura assim que a classe é chamada tratando possíveis
+            erros de arquivo inexistente ou decodificão, caso os erros
+            ocorram a classe cria uma nova bibliotéca clientes
+        """
         self.clientes_cadastrados = {}
+
         try:
             with open("clientes_cadastrados.json", "r") as arquivo:
                 self.clientes_cadastrados = json.load(arquivo)
@@ -20,6 +32,8 @@ class Autenticacao:
         if len(senha) != 6:
             print("A senha deve conter exatamente 6 caracteres")
             return False
+        # TODO: Implementar hashing de senhas (lib hashlib?).
+        #       Não é seguro salvar senhas em texto puro.
         self.clientes_cadastrados[cpf] = senha
         try:
             with open("clientes_cadastrados.json", "w") as arquivo:
